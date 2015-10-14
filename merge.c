@@ -38,6 +38,11 @@ int intAnem = digitalPinToInterrupt(inputAnemometer); // interrupt of Anemometer
 int inputRain = 3;
 int intRain = digitalPinToInterrupt(inputRain); // interrupt of rain
 
+// read current
+int inputCurrent1 = A1;
+unsigned adcCurrent1 = 0;
+float current1 = 0;
+
 void setup() {
   
   Serial.begin(9600);
@@ -92,14 +97,18 @@ void wind_count(){
 //wind speed
 #define WIND_FACTOR 2.4
 float windSpeed = 0.0;
-int sampleTime = 5;
+unsigned long lastmillis = 0;
+int sampleTime = 3;
 
 float calculating_wind_speed(){
   
-  windCounter = 0;
-  delay(sampleTime*1000);
-  windSpeed = ((float)windCounter/sampleTime) * WIND_FACTOR;
+  
 
+  if ((millis() - lastmillis) > (1000*sampleTime)) {
+    windSpeed = ((float)windCounter/sampleTime) * WIND_FACTOR;
+    lastmillis = millis();
+    windCounter = 0;
+  }
   return windSpeed;
 }
 
@@ -118,7 +127,7 @@ float voltageToDegrees(float value) { // convert volt to degree (change directio
   // Note:  The original documentation for the wind vane says 16 positions.  Typically only recieve 8 positions.  And 315 degrees was wrong.
   
   // For 5V, use 1.0.  For 3.3V use 0.66
-#define ADJUST3OR5 1.0
+#define ADJUST3OR5 1.02
 
   if (fuzzyCompare(3.84 * ADJUST3OR5 , value))
       directionWind = 0.0;
@@ -170,6 +179,28 @@ float voltageToDegrees(float value) { // convert volt to degree (change directio
       
 }
 
+short maxADCCurrent1;
+short minADCCurrent1;
+byte sampleCurrent = 20;
+
+byte currentCounter = 0;
+
+void calculation_current(){
+  maxADCCurrent1 = 0;
+  minADCCurrent1 = 1023;
+  for(currentCounter = 0; currentCounter < sampleCurrent;currentCounter++){
+    adcCurrent1 = analogRead(inputCurrent1);
+    if(maxADCCurrent1 < adcCurrent1){
+      maxADCCurrent1 = adcCurrent1;
+    }
+    if(minADCCurrent1 > adcCurrent1){
+      minADCCurrent1 = adcCurrent1;
+    }
+  }
+        
+  current1 = abs((523-minADCCurrent1)+(maxADCCurrent1-526))/2.0;
+
+}
 
 void loop() {
               
@@ -233,5 +264,10 @@ void testPrintWindSpeed(){
 
 void testPrintLux(){
   Serial.print(" Light = ");
-  Serial.println(lux);
+  Serial.println(lux/1.5);
+}
+
+void testPrintCurrent(){
+  Serial.print(" Current = ");
+  Serial.println(current1);
 }
