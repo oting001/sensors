@@ -49,6 +49,20 @@ float current2 = 0;
 int inputCurrent3 = A3;
 float current3 = 0;
 
+// read volt
+#define CONST_VOLT 60.921053
+int inputV1 = A4;
+int adcV1 = 0;
+float v1 = 0;
+
+int inputV2 = A5;
+int adcV2 = 0;
+float v2 = 0;
+
+int inputV3 = A6;
+int adcV3 = 0;
+float v3 = 0;
+
 void setup() {
   
   Serial.begin(9600);
@@ -252,7 +266,14 @@ void loop() {
     adcWindVane = analogRead(inputWindVane);
     voltageWind = (adcWindVane / 1023.0) * VCC; // adc to volt
     voltageToDegrees(voltageWind);
-    
+
+    adcV1 = analogRead(inputV1);
+    v1 = (adcV1/1023.0) * 5 * CONST_VOLT;
+    adcV2 = analogRead(inputV2);
+    v2 = (adcV2/1023.0) * 5 * CONST_VOLT;
+    adcV3 = analogRead(inputV3);
+    v3 = (adcV3/1023.0) * 5 * CONST_VOLT;
+
     //Temperature
     celsius = dht.readTemperature();
 
@@ -327,7 +348,7 @@ void setJson(){
    currentJson["c2"] = current1;
    currentJson["c3"] = current1;
    jsonObject["degree"] = directionWind;
-   voltJson["v1"] = 0;
-   voltJson["v2"] = 1;
-   voltJson["v3"] = 2;
+   voltJson["v1"] = v1;
+   voltJson["v2"] = v2;
+   voltJson["v3"] = v3;
 }
