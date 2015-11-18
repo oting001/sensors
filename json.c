@@ -20,10 +20,15 @@ uint16_t lux = 0;
 #define VCC 5
 
 //read Temperature
-int inputDHT22 = 4;
-DHT dht(inputDHT22, DHT22); //dht type = DHT22 = AM2302
-float humidity = 0.0;
-float celsius = 0.0;
+int inputDHT22_1 = 4;
+DHT dht1(inputDHT22_1, DHT22); //dht type = DHT22 = AM2302
+float humidity1 = 0.0;
+float celsius1 = 0.0;
+
+int inputDHT22_2 = 5;
+DHT dht2(inputDHT22_2, DHT22); //dht type = DHT22 = AM2302
+float humidity2 = 0.0;
+float celsius2 = 0.0;
 
 // read wind vane
 int inputWindVane = A0;
@@ -50,7 +55,7 @@ int inputCurrent3 = A3;
 float current3 = 0;
 
 // read volt
-#define CONST_VOLT 60.921053
+#define CONST_VOLT 67.85
 int inputV1 = A4;
 int adcV1 = 0;
 float v1 = 0;
@@ -123,7 +128,7 @@ void calculating_wind_speed(int sTime){
 }
 
 unsigned long lastmillis = 0;
-int sampleTime = 3;
+int sampleTime = 5;
 
 void calculating_TSampling(){
    if ((millis() - lastmillis) > (1000*sampleTime)) {
@@ -275,10 +280,24 @@ void loop() {
     v3 = (adcV3/1023.0) * 5 * CONST_VOLT;
 
     //Temperature
-    celsius = dht.readTemperature();
-
+    celsius1 = dht1.readTemperature();
+    if(isnan(celsius1)){
+      celsius1 = 0;
+    }
+    celsius2 = dht2.readTemperature();
+    if(isnan(celsius2)){
+      celsius2 = 0;
+    }
     //Humidity
-    humidity = dht.readHumidity();
+    humidity1 = dht1.readHumidity();
+    if(isnan(humidity1)){
+      humidity1 = 0;
+    }
+    humidity2 = dht2.readHumidity();
+    if(isnan(humidity2)){
+      humidity2 = 0;
+    }
+
 
     //light
     lux = lightMeter.readLightLevel();
@@ -314,12 +333,12 @@ void testPrintRain(){
 
 void testPrintTemperature(){
   Serial.print(" Temperature = ");
-  Serial.println(celsius);
+  Serial.println(celsius1);
 }
 
 void testPrintHumidity(){
   Serial.print(" Humidity = ");
-  Serial.println(humidity);
+  Serial.println(humidity1);
 }
 
 void testPrintWindSpeed(){
@@ -339,9 +358,10 @@ void testPrintCurrent(){
 
 void setJson(){
    jsonObject["light"] = lux/1.5;
-   jsonObject["humidity"] = humidity;
-   tempJson["inn"]= celsius;
-   tempJson["out"]= celsius;   
+   jsonObject["humidity"] = humidity1;
+   jsonObject["humidity2"] = humidity2;
+   tempJson["inn"]= celsius1;
+   tempJson["out"]= celsius2;   
    jsonObject["rainfall"] = rainfall;
    jsonObject["windspeed"] = windSpeed; 
    currentJson["c1"] = current1;
